@@ -73,6 +73,8 @@ chmod +x scripts/*.sh
 ### Gerar os gráficos
 
 ```bash
+sudo apt install python3-pandas python3-matplotlib python3-numpy -y
+
 python3 analyze/plot_tcp_co.py all
 ```
 
