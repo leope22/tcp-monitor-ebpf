@@ -54,8 +54,8 @@ struct {
 // Função que preenche a flow_key
 static __always_inline void build_flow_key(struct sock *sk, struct flow_key *key) {
     __builtin_memset(key, 0, sizeof(*key));
-    key->src_ip   = BPF_CORE_READ(sk, __sk_common.skc_rcv_saddr);
-    key->dst_ip   = BPF_CORE_READ(sk, __sk_common.skc_daddr);
+    key->src_ip = BPF_CORE_READ(sk, __sk_common.skc_rcv_saddr);
+    key->dst_ip = BPF_CORE_READ(sk, __sk_common.skc_daddr);
     key->dst_port = bpf_ntohs(BPF_CORE_READ(sk, __sk_common.skc_dport));
     key->src_port = BPF_CORE_READ(sk, __sk_common.skc_num);
 }
@@ -79,21 +79,21 @@ int BPF_PROG(trace_tcp_rcv_established, struct sock *sk, struct sk_buff *skb) {
     struct tcp_metrics metrics = {};
     
     // Lê as variáveis internas do kernel Linux (BPF_CORE_READ para caso mude para kprobe)
-    metrics.snd_cwnd      = BPF_CORE_READ(tp, snd_cwnd);
-    metrics.ssthresh      = BPF_CORE_READ(tp, snd_ssthresh);
-    metrics.srtt          = BPF_CORE_READ(tp, srtt_us) >> 3;
-    metrics.bytes_acked   = BPF_CORE_READ(tp, bytes_acked);
-    metrics.packets_out   = BPF_CORE_READ(tp, packets_out);
-    metrics.retrans_out   = BPF_CORE_READ(tp, retrans_out);
+    metrics.snd_cwnd = BPF_CORE_READ(tp, snd_cwnd);
+    metrics.ssthresh = BPF_CORE_READ(tp, snd_ssthresh);
+    metrics.srtt = BPF_CORE_READ(tp, srtt_us) >> 3;
+    metrics.bytes_acked = BPF_CORE_READ(tp, bytes_acked);
+    metrics.packets_out = BPF_CORE_READ(tp, packets_out);
+    metrics.retrans_out = BPF_CORE_READ(tp, retrans_out);
     metrics.total_retrans = BPF_CORE_READ(tp, total_retrans);
-    metrics.sndbuf        = BPF_CORE_READ(sk, sk_sndbuf);
-    metrics.tcp_state     = BPF_CORE_READ(sk, __sk_common.skc_state);
+    metrics.sndbuf = BPF_CORE_READ(sk, sk_sndbuf);
+    metrics.tcp_state = BPF_CORE_READ(sk, __sk_common.skc_state);
 
     // Converte para socket de conexão da internet para acessar variáveis de retr e congestionamento
     struct inet_connection_sock *icsk = (struct inet_connection_sock *)sk;
     metrics.retransmissions = BPF_CORE_READ(icsk, icsk_retransmits);
     // Pacotes que chegaram fora de ordem no destino -> ACKs duplicados
-    metrics.duplicate_acks  = BPF_CORE_READ(tp, sacked_out);
+    metrics.duplicate_acks = BPF_CORE_READ(tp, sacked_out);
     // Estrutura do algoritmo de controle de congestionamento
     struct tcp_congestion_ops *ca_ops = NULL;
     bpf_probe_read_kernel(&ca_ops, sizeof(ca_ops), &icsk->icsk_ca_ops);
